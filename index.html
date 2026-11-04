@@ -4,58 +4,333 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cubing Notes</title>
-<meta name="description" content="Algorithms, diagrams and notes for solving the 3x3 Rubik's cube faster.">
+<meta name="description" content="CFOP algorithms for the 3x3 Rubik's cube, split into beginner, intermediate and advanced sets, with a diagram for every case.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="assets/site.css">
 <style>
-.guides { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
-.guide { display: grid; gap: 6px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: var(--fg); transition: border-color .15s; }
-.guide:hover { border-color: var(--accent); }
-.guide p { margin: 0; color: var(--muted); font-size: 14px; }
-.guide .count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.guide.soon { border-style: dashed; background: transparent; pointer-events: none; }
-.guide.soon h3 { color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { .guide { transition: none; } }
+/* Stage tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { display: flex; align-items: baseline; gap: 8px; padding: 10px 14px 12px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: none; font: 600 16px var(--font-display); color: var(--muted); white-space: nowrap; margin-bottom: -1px; }
+.tab .step { font: 500 12px var(--font-mono); color: var(--muted); }
+.tab:hover { color: var(--fg); border-color: var(--line); }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab[aria-selected="true"] .step { color: var(--accent); }
+
+.stage-intro { display: grid; gap: 6px; margin-bottom: 20px; }
+.stage-intro p { margin: 0; max-width: 70ch; color: var(--muted); }
+
+/* Level picker */
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
+.level { display: grid; gap: 2px; text-align: left; padding: 10px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.level .name { font: 600 15px var(--font-display); }
+.level .count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.level[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.level[aria-pressed="true"] .name { color: var(--accent); }
+.level-note { margin: 0 0 28px; max-width: 72ch; color: var(--muted); font-size: 14px; }
+
+.key { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
+.key .notation { display: block; flex-basis: 100%; }
+.key code { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: start; transition: border-color .15s; }
+.card.learned { border-color: var(--done); }
+.diagram { display: grid; gap: 4px; justify-items: center; }
+.diagram svg { width: 112px; height: 112px; display: block; }
+.front { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.info { display: grid; gap: 8px; min-width: 0; }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.num { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); background: var(--chip); padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.rec { margin: 0; font-size: 13.5px; color: var(--muted); }
+.alg { font-family: var(--font-mono); font-size: 14px; background: var(--chip); padding: 8px 10px; border-radius: 6px; word-spacing: 0.15em; overflow-wrap: anywhere; }
+.alg .auf { color: var(--muted); }
+.meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.actions { display: flex; gap: 6px; }
+button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done); }
+
+/* Cross tips */
+.tips { display: grid; gap: 12px; max-width: 760px; padding: 0; margin: 0; list-style: none; counter-reset: tip; }
+.tips li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; counter-increment: tip; }
+.tips li::before { content: counter(tip); font: 600 15px var(--font-mono); color: var(--accent); }
+.tips h3 { margin-bottom: 4px; }
+.tips p { margin: 0; color: var(--muted); }
+
+@media (max-width: 520px) {
+  .levels { grid-template-columns: 1fr; }
+  .level { grid-template-columns: 1fr auto; align-items: baseline; }
+}
+@media (max-width: 420px) {
+  .card { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .diagram svg { width: 92px; height: 92px; }
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <nav class="site-nav">
-    <a class="home" href="./" aria-current="page">Cubing Notes</a>
-    <a href="oll/">OLL</a>
-  </nav>
-
   <header class="page">
-    <div class="eyebrow">3×3 speedsolving</div>
+    <div class="eyebrow">3×3 speedsolving · CFOP method</div>
     <h1>Cubing Notes</h1>
-    <p class="lede">Algorithms, case diagrams and things we've learned while getting faster at the 3×3. Every diagram is generated from its algorithm, so the picture always matches the moves.</p>
+    <p class="lede">CFOP solves the cube in four steps: the cross, the first two layers (F2L), orienting the last layer (OLL) and permuting it (PLL). Pick a step, start at Beginner, and only move up a level once those algorithms feel automatic.</p>
   </header>
 
-  <section>
-    <div class="sec-head">
-      <h2>Guides</h2>
-    </div>
-    <div class="guides">
-      <a class="guide" href="oll/">
-        <div class="eyebrow">Last layer · step 1</div>
-        <h3>OLL Case Sheet</h3>
-        <p>Get the whole top face yellow. 2-look OLL plus the first one-look cases to learn.</p>
-        <span class="count">17 cases</span>
-      </a>
-      <div class="guide soon" aria-disabled="true">
-        <div class="eyebrow">Last layer · step 2</div>
-        <h3>PLL</h3>
-        <p>Coming later: permuting the last layer.</p>
-      </div>
-      <div class="guide soon" aria-disabled="true">
-        <div class="eyebrow">First two layers</div>
-        <h3>F2L</h3>
-        <p>Coming later: pairing and inserting corners and edges.</p>
-      </div>
-    </div>
-  </section>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <main id="stage"></main>
 
-  <footer>Notation follows the standard WCA convention, holding the cube with yellow on top and green in front.</footer>
+  <footer>Every diagram is generated from its algorithm by a cube simulator, which also checks that each algorithm works. Hold the cube with yellow on top and green in front. Your "learned" marks are saved in this browser only.</footer>
 </div>
+
+<script src="assets/cases.js"></script>
+<script src="assets/diagram.js"></script>
+<script>
+const STAGES = [
+  { id: "cross", step: "1", name: "Cross" },
+  { id: "f2l", step: "2", name: "F2L" },
+  { id: "oll", step: "3", name: "OLL" },
+  { id: "pll", step: "4", name: "PLL" },
+];
+const LEVELS = [
+  { id: "beginner", name: "Beginner" },
+  { id: "intermediate", name: "Intermediate" },
+  { id: "advanced", name: "Advanced" },
+];
+
+const INTRO = {
+  f2l: {
+    title: "First two layers",
+    text: "Pair up a white corner with its matching edge, then insert the pair into its slot. Do this four times and the bottom two layers are solved. Every case here is shown for the front-right slot; for any other slot, turn the whole cube so that slot is at the front-right.",
+    levels: {
+      beginner: "Start with these 8. The four basic inserts finish almost every F2L case, and the other four show how to set pieces up for them. Many other cases can be solved by moving pieces into one of these positions first.",
+      intermediate: "The remaining cases where both pieces are in the top layer. Learning these means you no longer need to set up a basic case first.",
+      advanced: "Cases where the corner or edge is already in the slot. A common shortcut is to take the piece out with R U R' and then solve it as a normal case. These algorithms are faster.",
+    },
+  },
+  oll: {
+    title: "Orient the last layer",
+    text: "Make the whole top face yellow. The sides don't need to match yet; that's the job of PLL.",
+    levels: {
+      beginner: "2-look OLL: first make a yellow cross (3 algorithms), then turn the corners (7 algorithms). These 10 solve every OLL case in two steps.",
+      intermediate: "One-look cases that use moves you already know. Each one does both looks of OLL in one go.",
+      advanced: "The rest of full OLL, grouped by the shape the yellow stickers make. Once you know all of these, every OLL case takes one algorithm.",
+    },
+  },
+  pll: {
+    title: "Permute the last layer",
+    text: "With the top face yellow, move the top layer pieces into their correct places. Arrows show where each piece goes. A few algorithms leave the top layer one turn out of place, so the extra turn is shown after the algorithm.",
+    levels: {
+      beginner: "2-look PLL: solve the corners, then the edges. For corners, look for headlights (two matching corner stickers on the same side). If you see one pair, hold it on the left and do the T perm. If you see none, do the Y perm. If every side has headlights, skip to the edges.",
+      intermediate: "Common one-look PLLs. Each one solves a case that would otherwise take both beginner looks.",
+      advanced: "The remaining PLLs. With these, every PLL case takes one algorithm.",
+    },
+  },
+};
+
+const KEYS = {
+  f2l: [["c-white", "Corner and edge you're pairing (in colour)"], ["c-solved", "Already solved"], ["c-top", "Other top-layer pieces"]],
+  oll: [["c-yellow", "Yellow facing up"], ["c-yellow strip", "Yellow on the side"], ["blank", "Not yellow"], ["unknown dashed", "Ignore for this step"]],
+  pll: [["arrow", "Arrows: where each piece goes"], ["c-green", "Side colours as you'll see them"]],
+};
+const NOTATION = "Notation: <code>R</code> clockwise · <code>R'</code> counter-clockwise · <code>R2</code> half turn · <code>r f</code> two layers · <code>M</code> middle slice, turns like <code>L</code> · <code>x</code> turn the whole cube like <code>R</code>";
+
+const CROSS_TIPS = [
+  ["Solve it on the bottom", "Build the white cross with white facing down. It feels harder at first, but you can then see the F2L pieces straight away instead of turning the cube over."],
+  ["Match the centres", "Each white edge's other colour has to line up with its centre: green edge next to the green centre, and so on. A cross with white on the bottom but sides that don't match isn't finished."],
+  ["Plan during inspection", "In competition you get 15 seconds to look before you start. Use it to plan the whole cross. Every cross can be solved in 8 moves or fewer."],
+  ["Learn to look ahead", "Once the cross feels easy, try to spot your first F2L pair while you're still planning the cross."],
+];
+
+// ---------------------------------------------------------------- learned state
+const STORE = "cfop-learned";
+let learned = {};
+try { learned = JSON.parse(localStorage.getItem(STORE) || "{}") || {}; } catch (e) { learned = {}; }
+try {
+  // Carry over marks from the earlier OLL-only page.
+  const old = JSON.parse(localStorage.getItem("oll-learned") || "null");
+  if (old) {
+    const map = { "Line": "oll-line", "L shape": "oll-l-shape", "Dot": "oll-dot", "Sune": "oll-27", "Antisune": "oll-26",
+      "H": "oll-21", "Pi": "oll-22", "Headlights": "oll-23", "T (Chameleon)": "oll-24", "Bowtie": "oll-25",
+      "T shape": "oll-45", "P shape": "oll-44", "L shape (alternative)": "oll-44", "T shape (twisted)": "oll-33",
+      "Bar with headlights": "oll-51", "H edges": "oll-57", "Arrow": "oll-28" };
+    for (const k in old) if (old[k] && map[k]) learned[map[k]] = true;
+    localStorage.setItem(STORE, JSON.stringify(learned));
+    localStorage.removeItem("oll-learned");
+  }
+} catch (e) {}
+function save() { try { localStorage.setItem(STORE, JSON.stringify(learned)); } catch (e) {} }
+
+// ---------------------------------------------------------------- rendering
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function parseHash() {
+  const h = location.hash.replace("#", "");
+  const [stage, level] = h.split("-");
+  return {
+    stage: STAGES.some(s => s.id === stage) ? stage : "cross",
+    level: LEVELS.some(l => l.id === level) ? level : null,
+  };
+}
+
+let lastLevel = {};
+try { lastLevel = JSON.parse(localStorage.getItem("cfop-level") || "{}") || {}; } catch (e) { lastLevel = {}; }
+
+function renderTabs(active) {
+  const tabs = document.getElementById("tabs");
+  tabs.textContent = "";
+  for (const s of STAGES) {
+    const b = el("button", "tab");
+    b.type = "button"; b.id = "tab-" + s.id;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", s.id === active);
+    b.append(el("span", "step", s.step), el("span", null, s.name));
+    b.addEventListener("click", () => { location.hash = s.id === "cross" ? "cross" : s.id + "-" + (lastLevel[s.id] || "beginner"); });
+    tabs.appendChild(b);
+  }
+}
+
+function renderCross(main) {
+  const intro = el("div", "stage-intro");
+  intro.append(el("h2", null, "The cross"), el("p", null, "Solve the four white edges first to make a white cross. There are no algorithms to learn here: the cross is worked out by eye, and it gets faster with practice."));
+  const list = el("ol", "tips");
+  for (const [h, p] of CROSS_TIPS) {
+    const li = el("li");
+    const body = el("div");
+    body.append(el("h3", null, h), el("p", null, p));
+    li.appendChild(body);
+    list.appendChild(li);
+  }
+  main.append(intro, list);
+}
+
+function keyBar(stage) {
+  const key = el("div", "key");
+  key.setAttribute("aria-label", "Diagram key");
+  for (const [cls, text] of KEYS[stage]) {
+    const s = el("span");
+    const sw = el("i", "sw");
+    const [tok, mod] = cls.split(" ");
+    sw.style.background = tok === "arrow" ? "var(--arrow)" : `var(--${tok})`;
+    if (mod === "strip") sw.style.height = "5px";
+    if (mod === "dashed") sw.style.border = "1px dashed var(--muted)";
+    if (tok === "arrow") { sw.style.background = "linear-gradient(var(--c-yellow) 38%, var(--arrow) 38% 62%, var(--c-yellow) 62%)"; sw.style.width = "20px"; }
+    if (tok === "c-white") { sw.style.background = "linear-gradient(90deg, var(--c-white) 33%, var(--c-green) 33% 66%, var(--c-orange) 66%)"; sw.style.width = "24px"; sw.style.boxShadow = "inset 0 0 0 1px var(--line)"; }
+    s.append(sw, document.createTextNode(text));
+    key.appendChild(s);
+  }
+  const n = el("p", "notation"); n.style.margin = "0"; n.innerHTML = NOTATION; key.appendChild(n);
+  return key;
+}
+
+function card(stage, c) {
+  const article = el("article", "card");
+  const d = el("div", "diagram");
+  const svg = stage === "f2l" ? CubeDiagram.f2l(c.faces, c.title) : stage === "pll" ? CubeDiagram.pll(c, c.title) : CubeDiagram.oll(c.grid, c.title);
+  d.appendChild(svg);
+  if (stage !== "f2l") d.appendChild(el("span", "front", "Front"));
+  const info = el("div", "info");
+  const tr = el("div", "title-row");
+  tr.appendChild(el("h3", null, c.title));
+  if (c.oll && !c.title.startsWith("OLL")) tr.appendChild(el("span", "num", "OLL " + c.oll));
+  info.appendChild(tr);
+  info.appendChild(el("p", "rec", c.rec));
+  const alg = el("div", "alg", c.alg);
+  if (c.auf) alg.appendChild(el("span", "auf", "  then " + c.auf));
+  info.appendChild(alg);
+  const meta = el("div", "meta");
+  meta.appendChild(el("span", null, c.moves + " moves"));
+  const actions = el("div", "actions");
+  const copy = el("button", null, "Copy");
+  copy.type = "button"; copy.id = "copy-" + c.id;
+  copy.addEventListener("click", () => {
+    const text = c.auf ? c.alg + " " + c.auf : c.alg;
+    const flash = t => { copy.textContent = t; setTimeout(() => copy.textContent = "Copy", 1400); };
+    const fallback = () => { const s = getSelection(); const r = document.createRange(); r.selectNodeContents(alg); s.removeAllRanges(); s.addRange(r); flash("Selected"); };
+    try { navigator.clipboard.writeText(text).then(() => flash("Copied"), fallback); } catch (e) { fallback(); }
+  });
+  const mark = el("button", "mark", "");
+  mark.type = "button"; mark.id = "learned-" + c.id;
+  const sync = () => {
+    const on = !!learned[c.id];
+    mark.setAttribute("aria-pressed", on);
+    mark.textContent = on ? "Learned ✓" : "Mark learned";
+    article.classList.toggle("learned", on);
+  };
+  mark.addEventListener("click", () => { learned[c.id] = !learned[c.id]; save(); sync(); updateCounts(stage); });
+  sync();
+  actions.append(copy, mark);
+  meta.appendChild(actions);
+  info.appendChild(meta);
+  article.append(d, info);
+  return article;
+}
+
+function updateCounts(stage) {
+  for (const lv of LEVELS) {
+    const node = document.getElementById("count-" + lv.id);
+    if (!node) continue;
+    const cases = CASES[stage].filter(c => c.level === lv.id);
+    const n = cases.filter(c => learned[c.id]).length;
+    node.textContent = `${cases.length} algorithms` + (n ? ` · ${n} learned` : "");
+  }
+}
+
+function renderStage(main, stage, level) {
+  const info = INTRO[stage];
+  const intro = el("div", "stage-intro");
+  intro.append(el("h2", null, info.title), el("p", null, info.text));
+  main.appendChild(intro);
+
+  const levels = el("div", "levels");
+  for (const lv of LEVELS) {
+    const b = el("button", "level");
+    b.type = "button"; b.id = "level-" + lv.id;
+    b.setAttribute("aria-pressed", lv.id === level);
+    const count = el("span", "count"); count.id = "count-" + lv.id;
+    b.append(el("span", "name", lv.name), count);
+    b.addEventListener("click", () => { location.hash = stage + "-" + lv.id; });
+    levels.appendChild(b);
+  }
+  main.appendChild(levels);
+  main.appendChild(el("p", "level-note", info.levels[level]));
+  main.appendChild(keyBar(stage));
+
+  const cases = CASES[stage].filter(c => c.level === level);
+  const sections = [];
+  for (const c of cases) {
+    let s = sections.find(x => x.name === c.section);
+    if (!s) { s = { name: c.section, cases: [] }; sections.push(s); }
+    s.cases.push(c);
+  }
+  for (const s of sections) {
+    const sec = el("section");
+    const head = el("div", "sec-head");
+    head.append(el("h3", null, s.name), el("p", null, `${s.cases.length} ${s.cases.length === 1 ? "algorithm" : "algorithms"}`));
+    const grid = el("div", "grid");
+    for (const c of s.cases) grid.appendChild(card(stage, c));
+    sec.append(head, grid);
+    main.appendChild(sec);
+  }
+  updateCounts(stage);
+}
+
+function render() {
+  const { stage, level: hashLevel } = parseHash();
+  const level = hashLevel || lastLevel[stage] || "beginner";
+  if (stage !== "cross") {
+    lastLevel[stage] = level;
+    try { localStorage.setItem("cfop-level", JSON.stringify(lastLevel)); } catch (e) {}
+  }
+  renderTabs(stage);
+  const main = document.getElementById("stage");
+  main.textContent = "";
+  if (stage === "cross") renderCross(main); else renderStage(main, stage, level);
+}
+
+window.addEventListener("hashchange", render);
+render();
+</script>
 </body>
 </html>

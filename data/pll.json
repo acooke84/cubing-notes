@@ -1,0 +1,23 @@
+[
+  {"id": "pll-t", "level": "beginner", "section": "Step 1: solve the corners", "title": "T perm", "alg": "R U R' U' R' F R2 U' R' U' R U R' F'"},
+  {"id": "pll-y", "level": "beginner", "section": "Step 1: solve the corners", "title": "Y perm", "alg": "F R U' R' U' R U R' F' R U R' U' R' F R F'"},
+  {"id": "pll-ua", "level": "beginner", "section": "Step 2: solve the edges", "title": "Ua perm", "alg": "R U' R U R U R U' R' U' R2"},
+  {"id": "pll-ub", "level": "beginner", "section": "Step 2: solve the edges", "title": "Ub perm", "alg": "R2 U R U R' U' R' U' R' U R'"},
+  {"id": "pll-h", "level": "beginner", "section": "Step 2: solve the edges", "title": "H perm", "alg": "M2 U M2 U2 M2 U M2"},
+  {"id": "pll-z", "level": "beginner", "section": "Step 2: solve the edges", "title": "Z perm", "alg": "M' U M2 U M2 U M' U2 M2"},
+  {"id": "pll-aa", "level": "intermediate", "section": "Corners only", "title": "Aa perm", "alg": "x R' U R' D2 R U' R' D2 R2 x'"},
+  {"id": "pll-ab", "level": "intermediate", "section": "Corners only", "title": "Ab perm", "alg": "x R2 D2 R U R' D2 R U' R x'"},
+  {"id": "pll-ja", "level": "intermediate", "section": "Swap two neighbouring corners", "title": "Ja perm", "alg": "R' U L' U2 R U' R' U2 R L"},
+  {"id": "pll-jb", "level": "intermediate", "section": "Swap two neighbouring corners", "title": "Jb perm", "alg": "R U R' F' R U R' U' R' F R2 U' R'"},
+  {"id": "pll-ra", "level": "intermediate", "section": "Swap two neighbouring corners", "title": "Ra perm", "alg": "R U' R' U' R U R D R' U' R D' R' U2 R'"},
+  {"id": "pll-rb", "level": "intermediate", "section": "Swap two neighbouring corners", "title": "Rb perm", "alg": "R2 F R U R U' R' F' R U2 R' U2 R"},
+  {"id": "pll-f", "level": "intermediate", "section": "Swap two neighbouring corners", "title": "F perm", "alg": "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R"},
+  {"id": "pll-e", "level": "advanced", "section": "Swap corners", "title": "E perm", "alg": "x' R U' R' D R U R' D' R U R' D R U' R' D' x"},
+  {"id": "pll-v", "level": "advanced", "section": "Swap corners", "title": "V perm", "alg": "R U' R U R' D R D' R U' D R2 U R2 D' R2"},
+  {"id": "pll-na", "level": "advanced", "section": "Swap corners", "title": "Na perm", "alg": "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'"},
+  {"id": "pll-nb", "level": "advanced", "section": "Swap corners", "title": "Nb perm", "alg": "R' U R U' R' F' U' F R U R' F R' F' R U' R"},
+  {"id": "pll-ga", "level": "advanced", "section": "G perms", "title": "Ga perm", "alg": "R2 U R' U R' U' R U' R2 U' D R' U R D'"},
+  {"id": "pll-gb", "level": "advanced", "section": "G perms", "title": "Gb perm", "alg": "R' U' R U D' R2 U R' U R U' R U' R2 D"},
+  {"id": "pll-gc", "level": "advanced", "section": "G perms", "title": "Gc perm", "alg": "R2 U' R U' R U R' U R2 U D' R U' R' D"},
+  {"id": "pll-gd", "level": "advanced", "section": "G perms", "title": "Gd perm", "alg": "R U R' U' D R2 U' R U' R' U R' U R2 D'"}
+]
