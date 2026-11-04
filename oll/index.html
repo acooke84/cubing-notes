@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OLL Case Sheet · Cubing Notes</title>
+<meta name="description" content="Top-view diagrams and algorithms for 2-look OLL plus one-look starter cases.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+.key { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; color: var(--muted); margin-bottom: 36px; }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
+.sw.y { background: var(--sticker); }
+.sw.g { background: var(--blank); }
+.sw.u { background: var(--unknown); border: 1px dashed var(--muted); }
+.sw.s { height: 6px; background: var(--sticker); }
+.key code { font-family: var(--font-mono); font-size: 12.5px; color: var(--fg); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: start; transition: border-color .15s; }
+.card.learned { border-color: var(--done); }
+.diagram { display: grid; gap: 4px; justify-items: center; }
+.diagram svg { width: 112px; height: 112px; display: block; }
+.front { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.info { display: grid; gap: 8px; min-width: 0; }
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.num { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); background: var(--chip); padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.rec { margin: 0; font-size: 13.5px; color: var(--muted); }
+.alg { font-family: var(--font-mono); font-size: 14px; background: var(--chip); padding: 8px 10px; border-radius: 6px; word-spacing: 0.15em; overflow-wrap: anywhere; }
+.meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.actions { display: flex; gap: 6px; }
+button[aria-pressed="true"] { border-color: var(--done); color: var(--done); }
+.progress { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tip { font-size: 13.5px; color: var(--muted); max-width: 70ch; margin-top: 8px; }
+@media (max-width: 420px) {
+  .card { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .diagram svg { width: 92px; height: 92px; }
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="home" href="../">Cubing Notes</a>
+    <a href="./" aria-current="page">OLL</a>
+  </nav>
+
+  <header class="page">
+    <div class="eyebrow">3×3 last layer · orientation</div>
+    <h1>OLL Case Sheet</h1>
+    <p class="lede">Every case seen from above, with the front of the cube at the bottom of each diagram. Learn 2-look OLL first (the first two sections), then start on the one-look cases in the third. Mark cases as learned to track your progress in this browser.</p>
+    <div class="progress" id="progress"></div>
+  </header>
+
+  <div class="key" aria-label="Diagram key">
+    <span><i class="sw y"></i>Yellow facing up</span>
+    <span><i class="sw s"></i>Yellow on the side</span>
+    <span><i class="sw g"></i>Not yellow</span>
+    <span><i class="sw u"></i>Ignore for this step</span>
+    <span>Notation: <code>R</code> clockwise · <code>R'</code> counter-clockwise · <code>R2</code> half turn · <code>r f</code> two layers · <code>M</code> middle slice, turns like <code>L</code></span>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Look 1 · 3 algorithms</div>
+      <h2>Orient the edges</h2>
+      <p>Make a yellow cross on top. Only the four edges matter here, so the corners are left blank.</p>
+    </div>
+    <div class="grid" id="g-edges"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Look 2 · 7 algorithms</div>
+      <h2>Orient the corners</h2>
+      <p>With the cross done, count how many corners have yellow on top: one means Sune or Antisune, none means H or Pi, two means Headlights, T or Bowtie.</p>
+    </div>
+    <div class="grid" id="g-corners"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">Next step · full OLL starters</div>
+      <h2>One-look shortcuts</h2>
+      <p>Short algorithms that skip a whole look. The first two reuse the edge algorithms you already know.</p>
+    </div>
+    <div class="grid" id="g-full"></div>
+    <p class="tip">Each pattern can show up rotated. Turn the top layer (U, U', U2) until it matches the diagram, then run the algorithm.</p>
+  </section>
+
+  <footer>Diagrams are generated from the algorithms by a cube simulator, so each picture matches its algorithm.</footer>
+</div>
+
+<script src="../assets/diagram.js"></script>
+<script src="cases.js"></script>
+<script>
+const CASES = window.OLL_CASES;
+const KEY = "oll-learned";
+let learned = {};
+try { learned = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { learned = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(learned)); } catch (e) {} }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function updateProgress() {
+  const twoLook = CASES.filter(c => c.group !== "full");
+  const n2 = twoLook.filter(c => learned[c.name]).length;
+  const n = CASES.filter(c => learned[c.name]).length;
+  document.getElementById("progress").textContent = `Learned: ${n2} of ${twoLook.length} 2-look cases · ${n} of ${CASES.length} in total`;
+}
+CASES.forEach((c, i) => {
+  const card = el("article", "card");
+  const d = el("div", "diagram");
+  d.appendChild(topViewDiagram(c.grid, c.name));
+  d.appendChild(el("span", "front", "Front"));
+  const info = el("div", "info");
+  const tr = el("div", "title-row");
+  tr.appendChild(el("h3", null, c.name));
+  if (c.oll) tr.appendChild(el("span", "num", "OLL " + c.oll));
+  info.appendChild(tr);
+  info.appendChild(el("p", "rec", c.rec));
+  const algBox = el("div", "alg", c.alg);
+  info.appendChild(algBox);
+  const meta = el("div", "meta");
+  meta.appendChild(el("span", null, c.moves + " moves"));
+  const actions = el("div", "actions");
+  const copy = el("button", null, "Copy");
+  copy.type = "button";
+  copy.addEventListener("click", () => {
+    const flash = t => { copy.textContent = t; setTimeout(() => copy.textContent = "Copy", 1400); };
+    const fallback = () => { const s = getSelection(); const rg = document.createRange(); rg.selectNodeContents(algBox); s.removeAllRanges(); s.addRange(rg); flash("Selected"); };
+    try { navigator.clipboard.writeText(c.alg).then(() => flash("Copied"), fallback); } catch (e) { fallback(); }
+  });
+  const mark = el("button", null, "");
+  mark.type = "button";
+  const sync = () => { const on = !!learned[c.name]; mark.setAttribute("aria-pressed", on); mark.textContent = on ? "Learned ✓" : "Mark learned"; card.classList.toggle("learned", on); };
+  mark.addEventListener("click", () => { learned[c.name] = !learned[c.name]; save(); sync(); updateProgress(); });
+  sync();
+  actions.append(copy, mark);
+  meta.appendChild(actions);
+  info.appendChild(meta);
+  card.append(d, info);
+  document.getElementById("g-" + c.group).appendChild(card);
+});
+updateProgress();
+</script>
+</body>
+</html>

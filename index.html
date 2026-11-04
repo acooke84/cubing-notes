@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cubing Notes</title>
+<meta name="description" content="Algorithms, diagrams and notes for solving the 3x3 Rubik's cube faster.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+.guides { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.guide { display: grid; gap: 6px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: var(--fg); transition: border-color .15s; }
+.guide:hover { border-color: var(--accent); }
+.guide p { margin: 0; color: var(--muted); font-size: 14px; }
+.guide .count { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.guide.soon { border-style: dashed; background: transparent; pointer-events: none; }
+.guide.soon h3 { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .guide { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="site-nav">
+    <a class="home" href="./" aria-current="page">Cubing Notes</a>
+    <a href="oll/">OLL</a>
+  </nav>
+
+  <header class="page">
+    <div class="eyebrow">3×3 speedsolving</div>
+    <h1>Cubing Notes</h1>
+    <p class="lede">Algorithms, case diagrams and things we've learned while getting faster at the 3×3. Every diagram is generated from its algorithm, so the picture always matches the moves.</p>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <h2>Guides</h2>
+    </div>
+    <div class="guides">
+      <a class="guide" href="oll/">
+        <div class="eyebrow">Last layer · step 1</div>
+        <h3>OLL Case Sheet</h3>
+        <p>Get the whole top face yellow. 2-look OLL plus the first one-look cases to learn.</p>
+        <span class="count">17 cases</span>
+      </a>
+      <div class="guide soon" aria-disabled="true">
+        <div class="eyebrow">Last layer · step 2</div>
+        <h3>PLL</h3>
+        <p>Coming later: permuting the last layer.</p>
+      </div>
+      <div class="guide soon" aria-disabled="true">
+        <div class="eyebrow">First two layers</div>
+        <h3>F2L</h3>
+        <p>Coming later: pairing and inserting corners and edges.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Notation follows the standard WCA convention, holding the cube with yellow on top and green in front.</footer>
+</div>
+</body>
+</html>
