@@ -98,8 +98,10 @@
     svgEl("polygon", { points: shrunk.map(p => p.map(v => v.toFixed(2)).join(",")).join(" "), style: "fill:" + fill + ";stroke-linejoin:round" }, svg);
   }
 
-  function f2l(faces, label) {
-    const svg = frame(label + ", front-right view");
+  // With `mirrored`, faces.R holds the left face and the picture is flipped to show the front-left slot.
+  function f2l(faces, label, mirrored) {
+    const root = frame(label + (mirrored ? ", front-left view" : ", front-right view"));
+    const svg = mirrored ? svgEl("g", { transform: "translate(120 0) scale(-1 1)" }, root) : root;
     const h = 1.5;
     quad(svg, [proj(-h, h, -h), proj(h, h, -h), proj(h, h, h), proj(-h, h, h)], "var(--c-body)", -0.02);
     quad(svg, [proj(-h, h, h), proj(h, h, h), proj(h, -h, h), proj(-h, -h, h)], "var(--c-body)", -0.02);
@@ -115,7 +117,7 @@
       const rz = h - c, ry = h - r;
       quad(svg, [proj(h, ry, rz), proj(h, ry, rz - 1), proj(h, ry - 1, rz - 1), proj(h, ry - 1, rz)], STICKER[faces.R[r][c]], 0.16);
     }
-    return svg;
+    return root;
   }
 
   window.CubeDiagram = { oll, pll, f2l };

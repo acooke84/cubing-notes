@@ -94,6 +94,21 @@ def invert(alg):
     return " ".join(out)
 
 
+MIRROR_FACE = {"R": "L", "L": "R", "r": "l", "l": "r"}
+
+
+def mirror(alg):
+    """Left-right mirror image of `alg`: R becomes L', U becomes U', and so on."""
+    out = []
+    for t in parse(alg):
+        face = MIRROR_FACE.get(t[0], t[0])
+        if t[0] in "xM":  # turns about the left-right axis keep their direction
+            out.append(face + t[1:])
+        else:
+            out.append(face + ("" if t.endswith("'") else "2" if t.endswith("2") else "'"))
+    return " ".join(out)
+
+
 def move_count(alg):
     """Half-turn metric: slice moves count once, cube rotations are free."""
     return sum(1 for t in parse(alg) if t[0] not in "xyz")
@@ -193,7 +208,7 @@ def _grid_rc(pos):
     return (z + 1, x + 1)
 
 
-def pll_diagram(alg):
+def pll_diagram(alg, corners_only=False):
     """Side colours around the top face plus arrows showing where pieces go.
 
     Returns {"sides": {"back": "...", "front": "...", "left": "...", "right": "..."},
@@ -205,11 +220,16 @@ def pll_diagram(alg):
     A PLL algorithm may finish with the top layer turned. The diagram shows the
     case for whichever final U turn moves the fewest pieces, as standard
     PLL diagrams do, and `auf` names that turn.
+
+    With `corners_only`, edges are ignored: no edge arrows, and edge side
+    stickers are 'x' (grey).
     """
     def piece_moves(state):
         moves = {}
         for i, (p, n) in enumerate(SLOTS):
             if p[1] == 1 and n == (0, 1, 0) and p != (0, 1, 0):
+                if corners_only and 0 in (p[0], p[2]):
+                    continue
                 home = SLOTS[state[i]][0]
                 if home != p:
                     moves[_grid_rc(p)] = _grid_rc(home)
@@ -232,13 +252,16 @@ def pll_diagram(alg):
         if best is None or rank < best[0]:
             best = (rank, auf, state, moves)
     _, auf, state, moves = best
+    def side(pos, normal):
+        return "x" if corners_only and 0 in (pos[0], pos[2]) else colour_at(state, slot(pos, normal))
+
     sides = {"back": "", "front": "", "left": "", "right": ""}
     for x in (-1, 0, 1):
-        sides["back"] += colour_at(state, slot((x, 1, -1), (0, 0, -1)))
-        sides["front"] += colour_at(state, slot((x, 1, 1), (0, 0, 1)))
+        sides["back"] += side((x, 1, -1), (0, 0, -1))
+        sides["front"] += side((x, 1, 1), (0, 0, 1))
     for z in (-1, 0, 1):
-        sides["left"] += colour_at(state, slot((-1, 1, z), (-1, 0, 0)))
-        sides["right"] += colour_at(state, slot((1, 1, z), (1, 0, 0)))
+        sides["left"] += side((-1, 1, z), (-1, 0, 0))
+        sides["right"] += side((1, 1, z), (1, 0, 0))
     arrows, seen = [], set()
     for a, b in moves.items():
         if (a, b) in seen:
@@ -277,16 +300,27 @@ PAIR_EDGE = (1, 0, 1)
 PAIR_LABELS = {i for i, (p, n) in enumerate(SLOTS) if p in (PAIR_CORNER, PAIR_EDGE)}
 
 
-def f2l_valid(alg):
-    """True if `alg` solves a front-right F2L pair without disturbing the cross or other slots."""
+def _middle_edge(p):
+    return p[1] == 0 and 0 not in (p[0], p[2])
+
+
+def f2l_valid(alg, corner_only=False):
+    """True if `alg` solves a front-right F2L pair without disturbing the cross or other slots.
+
+    With `corner_only`, `alg` only has to solve the corner (layer-by-layer style),
+    and the middle-layer edges can be anywhere before and after.
+    """
     state = case_state(alg)
     if state == SOLVED:
         return False
     for i, (p, n) in enumerate(SLOTS):
-        if p[1] == 1 or p in (PAIR_CORNER, PAIR_EDGE):
+        if p[1] == 1 or p in (PAIR_CORNER, PAIR_EDGE) or (corner_only and _middle_edge(p)):
             continue
         if state[i] != i:
             return False
+    if corner_only:
+        done = apply(state, alg)
+        return all(done[i] == i for i, (p, n) in enumerate(SLOTS) if p == PAIR_CORNER)
     # the pair must sit in the top layer or its own slot
     for i, (p, n) in enumerate(SLOTS):
         if state[i] in PAIR_LABELS and not (p[1] == 1 or p in (PAIR_CORNER, PAIR_EDGE)):
@@ -304,11 +338,12 @@ def f2l_class(alg):
     return min(keys)
 
 
-def f2l_faces(alg):
+def f2l_faces(alg, corner_only=False):
     """Visible U, F and R faces (3x3 each, rows top to bottom as drawn) for an isometric diagram.
 
     Pair stickers keep their colour. Centres of F and R keep their colour so the
     slot is easy to find. Other top-layer stickers are 'x', other solved stickers 's'.
+    With `corner_only`, the edge and the rest of the middle layer are 'x' too.
     """
     state = case_state(alg)
     out = {}
@@ -316,6 +351,8 @@ def f2l_faces(alg):
     def mark(i):
         p, n = SLOTS[i]
         lab = state[i]
+        if corner_only and (_middle_edge(p) or SLOTS[lab][0] == PAIR_EDGE):
+            return "x"
         if lab in PAIR_LABELS:
             return slot_colour(lab)
         if p == n and FACE_OF_NORMAL[n] in "FRU":

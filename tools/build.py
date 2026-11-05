@@ -15,7 +15,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import cube  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-LEVELS = ("beginner", "intermediate", "advanced")
+LEVELS = ("novice", "beginner", "intermediate", "advanced")
 FULL_SET = {"f2l": 41, "oll": 57, "pll": 21}
 
 DIRECTION = {(0, 1, 0): "up", (0, -1, 0): "down", (0, 0, 1): "the front", (0, 0, -1): "the back",
@@ -29,6 +29,15 @@ class BuildError(Exception):
     pass
 
 
+def full_alg(c):
+    """Everything a case's moves do: the algorithm, repeated `repeat` times, then any `then` follow-up."""
+    return " ".join([c["alg"]] * c.get("repeat", 1) + [c.get("then", "")]).strip()
+
+
+def is_novice(c):
+    return c["level"] == "novice"
+
+
 def check_common(stage, cases):
     ids = set()
     for c in cases:
@@ -40,13 +49,15 @@ def check_common(stage, cases):
         if c["id"] in ids:
             raise BuildError(f"{stage}: duplicate id {c['id']}")
         ids.add(c["id"])
-        cube.parse(c["alg"])
+        if is_novice(c) and "rec" not in c:
+            raise BuildError(f"{stage}: novice case {c['id']} needs a 'rec'")
+        cube.parse(full_alg(c))
 
 
 def check_coverage(stage, cases, class_of, skip=lambda c: False):
     seen = {}
     for c in cases:
-        if skip(c):
+        if is_novice(c) or skip(c):
             continue
         k = class_of(c["alg"])
         if k in seen:
@@ -61,12 +72,12 @@ def check_coverage(stage, cases, class_of, skip=lambda c: False):
 
 def build_oll(cases):
     for c in cases:
-        if not cube.solved_below_top(cube.apply(cube.SOLVED, c["alg"])):
-            raise BuildError(f"oll: {c['id']} ({c['alg']}) breaks the first two layers")
+        if not cube.solved_below_top(cube.apply(cube.SOLVED, full_alg(c))):
+            raise BuildError(f"oll: {c['id']} ({full_alg(c)}) breaks the first two layers")
     check_coverage("oll", cases, cube.oll_class, skip=lambda c: c.get("edgesOnly"))
     out = []
     for c in cases:
-        grid = cube.oll_grid(c["alg"], edges_only=c.get("edgesOnly", False))
+        grid = cube.oll_grid(full_alg(c), edges_only=c.get("edgesOnly", False))
         e = {**c, "grid": grid}
         if "rec" not in e:
             corners = sum(grid[r][k] == "#" for r, k in cube.CORNER_TOP)
@@ -104,13 +115,15 @@ def _cycle_text(moves, names, word):
 
 def build_pll(cases):
     for c in cases:
-        s = cube.apply(cube.SOLVED, c["alg"])
+        s = cube.apply(cube.SOLVED, full_alg(c))
         if not cube.solved_below_top(s) or not cube.top_layer_oriented(s):
-            raise BuildError(f"pll: {c['id']} ({c['alg']}) is not a pure top-layer permutation")
+            raise BuildError(f"pll: {c['id']} ({full_alg(c)}) is not a pure top-layer permutation")
     check_coverage("pll", cases, cube.pll_class)
     out = []
     for c in cases:
-        d = cube.pll_diagram(c["alg"])
+        d = cube.pll_diagram(full_alg(c), corners_only=c.get("cornersOnly", False))
+        if "then" in c or c.get("cornersOnly"):
+            d["auf"] = ""  # the final turn comes after the follow-up, so it isn't shown
         corner_moves, edge_moves = {}, {}
         for r1, c1, r2, c2, both in d["arrows"]:
             target = corner_moves if (r1, c1) in CORNER_NAME else edge_moves
@@ -128,14 +141,27 @@ def build_pll(cases):
     return out
 
 
+def _front_right(c):
+    """The case's moves as done on the front-right slot. Front-left cases are mirrored."""
+    return cube.mirror(full_alg(c)) if c.get("slot") == "front-left" else full_alg(c)
+
+
 def build_f2l(cases):
     for c in cases:
-        if not cube.f2l_valid(c["alg"]):
+        if c.get("slot", "front-right") not in ("front-right", "front-left"):
+            raise BuildError(f"f2l: {c['id']} has unknown slot {c['slot']!r}")
+        if not cube.f2l_valid(_front_right(c), corner_only=c.get("cornerOnly", False)):
             raise BuildError(f"f2l: {c['id']} ({c['alg']}) disturbs the cross or another slot")
     check_coverage("f2l", cases, cube.f2l_class)
     out = []
     for c in cases:
-        out.append({**c, "faces": cube.f2l_faces(c["alg"]), "rec": c.get("rec", _f2l_text(c["alg"]))})
+        alg = _front_right(c)
+        faces = cube.f2l_faces(alg, corner_only=c.get("cornerOnly", False))
+        if c.get("slot") == "front-left":
+            # The diagram is drawn mirrored, which puts the right face's stickers on the left face.
+            swap = str.maketrans("OR", "RO")
+            faces = {k: [row.translate(swap) for row in v] for k, v in faces.items()}
+        out.append({**c, "faces": faces, "rec": c.get("rec") or _f2l_text(alg)})
     return out
 
 
@@ -170,7 +196,7 @@ def main():
         check_common(stage, cases)
         built = builder(cases)
         for c in built:
-            c["moves"] = cube.move_count(c["alg"])
+            c["moves"] = cube.move_count(c["alg"]) * c.get("repeat", 1)
         data[stage] = built
         counts = ", ".join(f"{lv} {sum(c['level'] == lv for c in built)}" for lv in LEVELS)
         print(f"{stage}: {len(built)} algorithms ({counts})")
