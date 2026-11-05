@@ -27,6 +27,7 @@ shows the angle to hold the cube at.
 | `tools/build.py` | Checks every algorithm and writes `assets/cases.js` |
 | `tools/find_f2l.py` | Searches for F2L algorithms; used to fill gaps in the F2L set |
 | `assets/` | Shared styles, diagram drawing and the generated case data |
+| `assets/cube.js`, `assets/player.js` | The move player: a JavaScript copy of the cube model and the 3D cube that plays an algorithm when you click it |
 | `oll/` | Redirect from the old OLL-only page |
 
 ## Adding or changing an algorithm
@@ -48,6 +49,8 @@ shows the angle to hold the cube at.
 3. Preview it locally (see below), then commit and push. GitHub Pages updates within a minute or two.
 
 The diagrams are worked out from the algorithms, so if a diagram looks wrong, the algorithm probably has a typo.
+
+Clicking an algorithm on the site plays it on a small 3D cube, starting from the case it solves. `assets/cube.js` must stay in step with `tools/cube.py`. If you change the moves in one, change the other to match.
 
 ## Conventions
 

@@ -48,6 +48,11 @@
 .rec { margin: 0; font-size: 13.5px; color: var(--muted); }
 .alg { font-family: var(--font-mono); font-size: 14px; background: var(--chip); padding: 8px 10px; border-radius: 6px; word-spacing: 0.15em; overflow-wrap: anywhere; }
 .alg .auf { color: var(--muted); }
+.alg[role="button"] { position: relative; padding-right: 30px; cursor: pointer; border: 1px solid transparent; }
+.alg[role="button"]::after { content: "▶"; position: absolute; right: 10px; top: 9px; font-size: 11px; color: var(--muted); }
+.alg[role="button"]:hover { border-color: var(--line); }
+.alg[role="button"]:hover::after { color: var(--accent); }
+.alg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .actions { display: flex; gap: 6px; }
 button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done); }
@@ -59,6 +64,31 @@ button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done)
 .tips h3 { margin-bottom: 4px; }
 .tips p { margin: 0; color: var(--muted); }
 
+/* Move player (assets/player.js) */
+.player { position: fixed; z-index: 10; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: min(500px, calc(100vw - 32px)); display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.22); }
+.player[hidden] { display: none; }
+.player-view { width: 130px; height: 130px; display: grid; place-items: center; perspective: 520px; touch-action: none; cursor: grab; user-select: none; }
+.player-view:active { cursor: grabbing; }
+.player-scene { position: relative; width: 0; height: 0; transform-style: preserve-3d; }
+.cubie { position: absolute; left: -13px; top: -13px; width: 26px; height: 26px; transform-style: preserve-3d; }
+.cf { position: absolute; inset: 0; background: var(--c-body); backface-visibility: hidden; }
+.st { position: absolute; inset: 2px; border-radius: 4px; }
+.player-body { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.player-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.player-close { border: 0; font-size: 20px; line-height: 1; padding: 0 4px; color: var(--muted); }
+.player-close:hover { color: var(--fg); }
+.player-moves { display: flex; flex-wrap: wrap; gap: 3px; font-family: var(--font-mono); font-size: 13px; }
+.player-move { padding: 1px 5px; border-radius: 4px; border: 1px solid transparent; cursor: pointer; }
+.player-move.done { color: var(--muted); }
+.player-move.next { border-color: var(--line); }
+.player-move.now { background: var(--accent); color: var(--surface); }
+.player-label { align-self: center; padding: 0 3px; font: 11px var(--font-body); color: var(--muted); }
+.player-status { margin: 0; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.player-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+.player-controls button { min-width: 34px; }
+.player-controls button:disabled { opacity: 0.4; cursor: default; }
+body.player-open .wrap { padding-bottom: 260px; }
+
 @media (max-width: 760px) {
   .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -67,6 +97,9 @@ button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done)
   .level { grid-template-columns: 1fr auto; align-items: baseline; }
 }
 @media (max-width: 420px) {
+  .player { grid-template-columns: 110px minmax(0, 1fr); gap: 10px; padding: 12px; }
+  .player-view { width: 110px; height: 110px; }
+  .player-scene { scale: 0.85; }
   .card { grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 14px; }
   .diagram svg { width: 92px; height: 92px; }
 }
@@ -89,6 +122,8 @@ button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done)
 
 <script src="assets/cases.js"></script>
 <script src="assets/diagram.js"></script>
+<script src="assets/cube.js"></script>
+<script src="assets/player.js"></script>
 <script>
 const STAGES = [
   { id: "cross", step: "1", name: "Cross" },
@@ -231,6 +266,15 @@ function keyBar(stage) {
   return key;
 }
 
+// Everything the player shows for a card: the algorithm (repeated), then any follow-up moves and final turn.
+function playParts(c) {
+  const parts = [];
+  for (let i = 0; i < (c.repeat || 1); i++) parts.push({ alg: c.alg, label: i ? "again" : null });
+  if (c.then) parts.push({ alg: c.then, label: "then" });
+  if (c.auf) parts.push({ alg: c.auf, label: "then" });
+  return parts;
+}
+
 function card(stage, c) {
   const article = el("article", "card");
   const d = el("div", "diagram");
@@ -246,6 +290,13 @@ function card(stage, c) {
   const alg = el("div", "alg", c.alg);
   if (c.repeat) alg.appendChild(el("span", "auf", "  ×" + c.repeat));
   if (c.auf) alg.appendChild(el("span", "auf", "  then " + c.auf));
+  alg.tabIndex = 0;
+  alg.setAttribute("role", "button");
+  alg.title = "Watch it on a 3D cube";
+  const watch = () => CubePlayer.open(c.title, playParts(c),
+    stage === "f2l" ? { pitch: -25, yaw: c.slot === "front-left" ? 38 : -38 } : { pitch: -45, yaw: -30 });
+  alg.addEventListener("click", watch);
+  alg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); watch(); } });
   info.appendChild(alg);
   const meta = el("div", "meta");
   meta.appendChild(el("span", null, c.moves + " moves"));
