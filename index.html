@@ -64,6 +64,50 @@ button[aria-pressed="true"].mark { border-color: var(--done); color: var(--done)
 .tips h3 { margin-bottom: 4px; }
 .tips p { margin: 0; color: var(--muted); }
 
+/* Practice (assets/practice.js) */
+.btn { display: inline-flex; align-items: center; gap: 8px; font: 600 14px var(--font-body); padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); text-decoration: none; cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary, .practice-grade.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+kbd { font: 500 11px var(--font-mono); padding: 1px 5px; border-radius: 4px; border: 1px solid currentColor; opacity: 0.65; }
+.practice-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; margin: -12px 0 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.practice-bar-text { display: grid; gap: 2px; }
+.practice-bar-text span { font-size: 13px; color: var(--muted); }
+.practice-bar-links { display: flex; gap: 8px; }
+.practice { display: grid; gap: 16px; max-width: 760px; }
+.practice-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.practice-back { font-size: 14px; }
+.practice-modes { display: flex; gap: 4px; flex-basis: 100%; }
+.practice-mode { padding: 6px 12px; border-radius: 99px; font-size: 13.5px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); }
+.practice-mode[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
+.practice-help { margin: 0; color: var(--muted); max-width: 70ch; font-size: 14px; }
+.practice-status { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.practice-count { padding: 3px 10px; border-radius: 99px; background: var(--chip); }
+.practice-count b { color: var(--fg); }
+.practice-count.new b { color: var(--accent); }
+.practice-count.review b { color: var(--done); }
+.practice-card { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 24px; align-items: start; padding: 22px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.practice-diagram { display: grid; gap: 6px; justify-items: center; }
+.practice-diagram svg { width: 200px; height: 200px; display: block; }
+.practice-side { display: grid; gap: 14px; min-width: 0; }
+.practice-prompt { margin: 0; font: 600 18px var(--font-display); }
+.practice-timer { font: 500 28px var(--font-mono); font-variant-numeric: tabular-nums; }
+.practice-reveal { justify-self: start; }
+.practice-setup summary { cursor: pointer; font-size: 13.5px; color: var(--muted); }
+.practice-setup p { margin: 8px 0 6px; font-size: 13px; color: var(--muted); }
+.practice-answer { display: grid; gap: 8px; }
+.practice-watch { justify-self: start; }
+.practice-grades { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+.practice-grade { display: grid; justify-items: center; gap: 2px; padding: 8px 6px; border-radius: 8px; font-size: 14px; }
+.grade-label { font-weight: 600; }
+.grade-when { font-size: 12px; opacity: 0.8; font-variant-numeric: tabular-nums; }
+.practice-done { grid-column: 1 / -1; display: grid; gap: 10px; }
+.practice-done p { margin: 0; color: var(--muted); }
+.practice-slow { margin: 0; padding-left: 20px; color: var(--muted); }
+.practice-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.practice-settings { display: flex; gap: 10px 20px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+.practice-settings select { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; }
+.practice-reset { margin-left: auto; }
+
 /* Move player (assets/player.js) */
 .player { position: fixed; z-index: 10; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); width: min(500px, calc(100vw - 32px)); display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgb(0 0 0 / 0.22); }
 .player[hidden] { display: none; }
@@ -92,6 +136,10 @@ body.player-open .wrap { padding-bottom: 260px; }
 @media (max-width: 760px) {
   .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+@media (max-width: 600px) {
+  .practice-card { grid-template-columns: 1fr; justify-items: stretch; padding: 16px; }
+  .practice-diagram svg { width: 170px; height: 170px; }
+}
 @media (max-width: 520px) {
   .levels { grid-template-columns: 1fr; }
   .level { grid-template-columns: 1fr auto; align-items: baseline; }
@@ -117,13 +165,15 @@ body.player-open .wrap { padding-bottom: 260px; }
   <div class="tabs" role="tablist" id="tabs"></div>
   <main id="stage"></main>
 
-  <footer>Every diagram is generated from its algorithm by a cube simulator, which also checks that each algorithm works. Hold the cube with yellow on top and green in front. Your "learned" marks are saved in this browser only.</footer>
+  <footer>Every diagram is generated from its algorithm by a cube simulator, which also checks that each algorithm works. Hold the cube with yellow on top and green in front. Your "learned" marks and practice progress are saved in this browser only.</footer>
 </div>
 
 <script src="assets/cases.js"></script>
 <script src="assets/diagram.js"></script>
 <script src="assets/cube.js"></script>
 <script src="assets/player.js"></script>
+<script src="assets/srs.js"></script>
+<script src="assets/practice.js"></script>
 <script>
 const STAGES = [
   { id: "cross", step: "1", name: "Cross" },
@@ -209,10 +259,11 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 
 function parseHash() {
   const h = location.hash.replace("#", "");
-  const [stage, level] = h.split("-");
+  const [stage, level, mode] = h.split("-");
   return {
     stage: STAGES.some(s => s.id === stage) ? stage : "cross",
     level: LEVELS.some(l => l.id === level) ? level : null,
+    mode: mode === "practice" || mode === "drill" ? mode : null,
   };
 }
 
@@ -275,11 +326,21 @@ function playParts(c) {
   return parts;
 }
 
+function diagramFor(stage, c) {
+  return stage === "f2l" ? CubeDiagram.f2l(c.faces, c.title, c.slot === "front-left") : stage === "pll" ? CubeDiagram.pll(c, c.title) : CubeDiagram.oll(c.grid, c.title);
+}
+
+// Play a card on the 3D cube. `pre` is a top-layer turn to do first, for a case shown from another angle.
+function watchCase(stage, c, pre) {
+  const parts = playParts(c);
+  if (pre) parts.unshift({ alg: pre, label: null });
+  CubePlayer.open(c.title, parts, stage === "f2l" ? { pitch: -25, yaw: c.slot === "front-left" ? 38 : -38 } : { pitch: -45, yaw: -30 });
+}
+
 function card(stage, c) {
   const article = el("article", "card");
   const d = el("div", "diagram");
-  const svg = stage === "f2l" ? CubeDiagram.f2l(c.faces, c.title, c.slot === "front-left") : stage === "pll" ? CubeDiagram.pll(c, c.title) : CubeDiagram.oll(c.grid, c.title);
-  d.appendChild(svg);
+  d.appendChild(diagramFor(stage, c));
   if (stage !== "f2l") d.appendChild(el("span", "front", "Front"));
   const info = el("div", "info");
   const tr = el("div", "title-row");
@@ -293,8 +354,7 @@ function card(stage, c) {
   alg.tabIndex = 0;
   alg.setAttribute("role", "button");
   alg.title = "Watch it on a 3D cube";
-  const watch = () => CubePlayer.open(c.title, playParts(c),
-    stage === "f2l" ? { pitch: -25, yaw: c.slot === "front-left" ? 38 : -38 } : { pitch: -45, yaw: -30 });
+  const watch = () => watchCase(stage, c);
   alg.addEventListener("click", watch);
   alg.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); watch(); } });
   info.appendChild(alg);
@@ -343,11 +403,13 @@ function updateCounts(stage) {
   }
 }
 
-function renderStage(main, stage, level) {
+function renderStage(main, stage, level, mode) {
   const info = INTRO[stage];
-  const intro = el("div", "stage-intro");
-  intro.append(el("h2", null, info.title), el("p", null, info.text));
-  main.appendChild(intro);
+  if (!mode) {
+    const intro = el("div", "stage-intro");
+    intro.append(el("h2", null, info.title), el("p", null, info.text));
+    main.appendChild(intro);
+  }
 
   const levels = el("div", "levels");
   for (const lv of LEVELS) {
@@ -356,14 +418,26 @@ function renderStage(main, stage, level) {
     b.setAttribute("aria-pressed", lv.id === level);
     const count = el("span", "count"); count.id = "count-" + lv.id;
     b.append(el("span", "name", lv.name), count);
-    b.addEventListener("click", () => { location.hash = stage + "-" + lv.id; });
+    b.addEventListener("click", () => { location.hash = stage + "-" + lv.id + (mode ? "-" + mode : ""); });
     levels.appendChild(b);
   }
   main.appendChild(levels);
+  const cases = CASES[stage].filter(c => c.level === level);
+  if (mode) {
+    Practice.render(main, {
+      stage, level, mode, cases,
+      title: `Practice: ${STAGES.find(s => s.id === stage).name} · ${LEVELS.find(l => l.id === level).name}`,
+      diagram: c => diagramFor(stage, c),
+      watch: (c, pre) => watchCase(stage, c, pre),
+      backHref: `#${stage}-${level}`,
+    });
+    updateCounts(stage);
+    return;
+  }
   main.appendChild(el("p", "level-note", info.levels[level]));
+  main.appendChild(Practice.bar(stage, level, cases));
   main.appendChild(keyBar(stage));
 
-  const cases = CASES[stage].filter(c => c.level === level);
   const sections = [];
   for (const c of cases) {
     let s = sections.find(x => x.name === c.section);
@@ -383,7 +457,8 @@ function renderStage(main, stage, level) {
 }
 
 function render() {
-  const { stage, level: hashLevel } = parseHash();
+  Practice.stop();
+  const { stage, level: hashLevel, mode } = parseHash();
   const level = hashLevel || lastLevel[stage] || "novice";
   if (stage !== "cross") {
     lastLevel[stage] = level;
@@ -392,7 +467,7 @@ function render() {
   renderTabs(stage);
   const main = document.getElementById("stage");
   main.textContent = "";
-  if (stage === "cross") renderCross(main); else renderStage(main, stage, level);
+  if (stage === "cross") renderCross(main); else renderStage(main, stage, level, mode);
 }
 
 window.addEventListener("hashchange", render);

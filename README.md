@@ -27,6 +27,7 @@ shows the angle to hold the cube at.
 | `tools/build.py` | Checks every algorithm and writes `assets/cases.js` |
 | `tools/find_f2l.py` | Searches for F2L algorithms; used to fill gaps in the F2L set |
 | `assets/` | Shared styles, diagram drawing and the generated case data |
+| `assets/srs.js`, `assets/practice.js` | Practice mode: the FSRS spaced-repetition scheduler and the flashcard and drill screens |
 | `assets/cube.js`, `assets/player.js` | The move player: a JavaScript copy of the cube model and the 3D cube that plays an algorithm when you click it |
 | `oll/` | Redirect from the old OLL-only page |
 
@@ -51,6 +52,16 @@ shows the angle to hold the cube at.
 The diagrams are worked out from the algorithms, so if a diagram looks wrong, the algorithm probably has a typo.
 
 Clicking an algorithm on the site plays it on a small 3D cube, starting from the case it solves. `assets/cube.js` must stay in step with `tools/cube.py`. If you change the moves in one, change the other to match.
+
+## Practice mode
+
+Every level has a **Practise** button (`#oll-beginner-practice`) and a **Drill all** button (`#oll-beginner-drill`).
+
+- **Spaced repetition** works like Anki. You see a case, recall the algorithm (ideally doing it on a cube), reveal the answer, then rate it Again, Hard, Good or Easy. The keys are 1 to 4, and Space reveals the answer or rates it Good. Scheduling uses FSRS-6, the scheduler Anki uses. `assets/srs.js` is a port of [py-fsrs](https://github.com/open-spaced-repetition/py-fsrs) with its default parameters: 1 and 10 minute learning steps, and 90% target retention. It introduces 5 new cases a day by default.
+- **Drill all** goes through every case in the level once, in random order, with a timer. Cases you miss come back at the end. Drilling doesn't change the spaced-repetition schedule.
+- OLL and PLL cases can be dealt from a random angle so you learn to recognise them from any side. The answer then shows the turn to make first.
+- "Set it up on your cube" gives moves that take a solved cube to the case.
+- Progress is stored in the browser's `localStorage` under `cfop-practice`.
 
 ## Conventions
 
